@@ -5,12 +5,7 @@ import '../../ui/shared/utils/global.dart' as globals;
 import '../apis/rick_and_morty_dio_config.dart';
 import '../models/character_model.dart';
 
-abstract class CharacterService {
-  CharacterService({
-    required this.endpoint,
-  });
-
-  final String endpoint;
+class CharacterService {
   Future<Dio> futureDio = RickAndMortyDioConfig.builderConfig();
 
   CharacterModel deserializePagedResponse(responseData) {
