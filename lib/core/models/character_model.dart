@@ -13,7 +13,7 @@ class CharacterModel {
     required this.type,
     required this.gender,
     required this.origin,
-    required this.locationModel,
+    required this.location,
     required this.image,
     required this.episode,
     required this.url,
@@ -25,7 +25,7 @@ class CharacterModel {
   late final String type;
   late final String gender;
   late final OriginModel origin;
-  late final LocationModel locationModel;
+  late final LocationModel location;
   late final String image;
   late final List<String> episode;
   late final String url;
@@ -35,4 +35,7 @@ class CharacterModel {
       _$CharacterModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$CharacterModelToJson(this);
+
+  static List<CharacterModel> fromJsonList(List<dynamic> json) =>
+      json.map((e) => _$CharacterModelFromJson(e)).toList();
 }

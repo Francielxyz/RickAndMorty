@@ -14,12 +14,12 @@ class CharacterService {
     );
   }
 
-  Future<CharacterModel?> getRequest(BuildContext context) async {
+  Future<List<CharacterModel>?> getRequest(BuildContext context) async {
     Dio dio = await futureDio;
     try {
       var response = await dio.get("");
 
-      return deserializePagedResponse(response.data);
+      return CharacterModel.fromJsonList(response.data['results']);
     } catch (e) {
       globals.errorSnackBar(
         context: context,
