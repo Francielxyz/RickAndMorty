@@ -5,7 +5,8 @@ import '../../ui/shared/utils/global.dart' as globals;
 import '../apis/rick_and_morty_dio_config.dart';
 import '../models/character_model.dart';
 
-class CharacterService {
+class CharacterService with ChangeNotifier {
+  int _page = 1;
   Future<Dio> futureDio = RickAndMortyDioConfig.builderConfig();
 
   CharacterModel deserializePagedResponse(responseData) {
@@ -14,15 +15,15 @@ class CharacterService {
     );
   }
 
-  Future<List<CharacterModel>?> getRequest(BuildContext context) async {
+  Future<List<CharacterModel>?> getRequest() async {
     Dio dio = await futureDio;
     try {
-      var response = await dio.get("");
+      var response = await dio.get('?page=$_page');
+      _page++;
 
       return CharacterModel.fromJsonList(response.data['results']);
     } catch (e) {
       globals.errorSnackBar(
-        context: context,
         message: 'Não foi possível realizar a busca',
       );
       return null;

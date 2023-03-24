@@ -2,7 +2,6 @@ import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 
 void errorSnackBar({
-  required BuildContext context,
   required String message,
   String? code,
 }) {
@@ -11,7 +10,7 @@ void errorSnackBar({
     message: 'Erro${code != null ? ' $code' : ''}: $message',
     duration: const Duration(seconds: 3),
     backgroundColor: Colors.red,
-  ).show(context);
+  );
 }
 
 void successSnackBar({

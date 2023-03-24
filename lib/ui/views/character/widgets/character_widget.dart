@@ -8,21 +8,41 @@ import '../character_controller.dart';
 import '../character_page.dart';
 
 class CharacterWidget extends State<CharacterPage> {
-  final ScrollController _scrollController = ScrollController();
-  final CharacterController _controller = CharacterController();
+  late ScrollController _scrollController;
+  late CharacterController _controller;
+  final scrollLoading = ValueNotifier(true);
   bool loading = true;
 
   @override
   void initState() {
     super.initState();
-    findAllCharacters(context);
+    _controller = CharacterController();
+    _scrollController = ScrollController();
+    _scrollController.addListener(infiniteScrolling);
+    findAllCharacters();
   }
 
-  Future<void> findAllCharacters(BuildContext context) async {
-    await _controller.findAllCharacter(context).then((value) => setState(
+  @override
+  void dispose() {
+    super.dispose();
+    _scrollController.dispose();
+  }
+
+  void infiniteScrolling() {
+    if (_scrollController.position.pixels ==
+            _scrollController.position.maxScrollExtent &&
+        !loading) {
+      findAllCharacters();
+    }
+  }
+
+  Future<void> findAllCharacters() async {
+    scrollLoading.value = true;
+    await _controller.findAllCharacter().then((value) => setState(
           () {
-            _controller.characters = value;
+            _controller.characters.addAll(value!);
             loading = false;
+            scrollLoading.value = false;
           },
         ));
   }
@@ -74,32 +94,42 @@ class CharacterWidget extends State<CharacterPage> {
     return Expanded(
       child: SizedBox(
         width: constraints.maxWidth,
-        child: ListView.builder(
-          controller: _scrollController,
-          shrinkWrap: true,
-          physics: const BouncingScrollPhysics(
-            parent: AlwaysScrollableScrollPhysics(),
-          ),
-          itemCount: _controller.characters!.length,
-          itemBuilder: (BuildContext context, int index) {
-            return Container(
-              margin: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 5,
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(15),
-                  color: Colors.black.withOpacity(0.12),
+        child: AnimatedBuilder(
+          animation: _scrollController,
+          builder: (context, snapshot) {
+            return Stack(
+              children: [
+                ListView.builder(
+                  controller: _scrollController,
+                  shrinkWrap: true,
+                  physics: const BouncingScrollPhysics(
+                    parent: AlwaysScrollableScrollPhysics(),
+                  ),
+                  itemCount: _controller.characters!.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          color: Colors.black.withOpacity(0.12),
+                        ),
+                        padding: const EdgeInsets.all(10),
+                        child: Row(
+                          children: [
+                            photoCharacter(index),
+                            infoCharacter(index),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
-                padding: const EdgeInsets.all(10),
-                child: Row(
-                  children: [
-                    photoCharacter(index),
-                    infoCharacter(index),
-                  ],
-                ),
-              ),
+                loadingIndicator(),
+              ],
             );
           },
         ),
@@ -165,6 +195,35 @@ class CharacterWidget extends State<CharacterPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget loadingIndicator() {
+    return ValueListenableBuilder(
+      valueListenable: scrollLoading,
+      builder: (context, bool isLoading, _) {
+        return (isLoading)
+            ? Container(
+                padding: const EdgeInsets.only(bottom: 30),
+                alignment: Alignment.bottomCenter,
+                child: const SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.transparent,
+                    child: SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 4,
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            : Container();
+      },
     );
   }
 }
